@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/LKRCharon/logiclint/blob/main/report.schema.json",
+  "title": "LogicLint report",
+  "description": "A deterministic, explainable LogicLint analysis report.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["tool", "schemaVersion", "source", "analysis"],
+  "properties": {
+    "tool": { "const": "logiclint" },
+    "schemaVersion": { "const": "0.3" },
+    "source": { "type": "string" },
+    "analysis": { "$ref": "#/$defs/analysis" }
+  },
+  "$defs": {
+    "analysis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "profile", "score", "paragraphs", "blocks", "issues", "metrics"],
+      "properties": {
+        "version": { "const": "0.3" },
+        "profile": { "enum": ["balanced", "logic", "technical"] },
+        "score": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "paragraphs": { "type": "array", "items": { "$ref": "#/$defs/block" } },
+        "blocks": { "type": "array", "items": { "$ref": "#/$defs/block" } },
+        "issues": { "type": "array", "items": { "$ref": "#/$defs/issue" } },
+        "metrics": { "$ref": "#/$defs/metrics" }
+      }
+    },
+    "block": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["index", "kind", "text", "start", "end", "lineStart", "lineEnd", "sentences", "role", "issues"],
+      "properties": {
+        "index": { "type": "integer", "minimum": 0 },
+        "kind": { "enum": ["paragraph", "heading", "list", "quote", "code"] },
+        "text": { "type": "string" },
+        "start": { "type": "integer", "minimum": 0 },
+        "end": { "type": "integer", "minimum": 0 },
+        "lineStart": { "type": "integer", "minimum": 1 },
+        "lineEnd": { "type": "integer", "minimum": 1 },
+        "sentences": { "type": "array", "items": { "type": "string" } },
+        "role": { "enum": ["claim", "evidence", "bridge", "mixed", "neutral"] },
+        "issues": { "type": "array", "items": { "$ref": "#/$defs/issue" } }
+      }
+    },
+    "issue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "blockIndex", "kind", "severity", "confidence", "label", "title", "detail", "suggestion", "why", "source", "spans"],
+      "properties": {
+        "id": { "type": "string" },
+        "blockIndex": { "type": "integer", "minimum": 0 },
+        "kind": { "enum": ["evidence", "causal", "drift", "vague", "pronoun", "duplicate", "paragraph", "number", "reference", "tone"] },
+        "severity": { "enum": ["high", "medium", "low"] },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "label": { "type": "string" },
+        "title": { "type": "string" },
+        "detail": { "type": "string" },
+        "suggestion": { "type": "string" },
+        "why": { "type": "string" },
+        "source": { "type": "string" },
+        "spans": { "type": "array", "items": { "$ref": "#/$defs/span" } }
+      }
+    },
+    "span": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start", "end", "text"],
+      "properties": {
+        "start": { "type": "integer", "minimum": 0 },
+        "end": { "type": "integer", "minimum": 0 },
+        "text": { "type": "string" }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["blocks", "paragraphs", "headings", "lists", "claims", "evidence", "bridges", "cited", "words"],
+      "properties": {
+        "blocks": { "type": "integer", "minimum": 0 },
+        "paragraphs": { "type": "integer", "minimum": 0 },
+        "headings": { "type": "integer", "minimum": 0 },
+        "lists": { "type": "integer", "minimum": 0 },
+        "claims": { "type": "integer", "minimum": 0 },
+        "evidence": { "type": "integer", "minimum": 0 },
+        "bridges": { "type": "integer", "minimum": 0 },
+        "cited": { "type": "integer", "minimum": 0 },
+        "words": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

@@ -1,5 +1,5 @@
 import { Copy, createIcons, Download, Github, Play, Sparkles, Target, Trash2 } from 'lucide';
-import { analyze, PROFILE_OPTIONS, type Analysis, type DocumentBlock, type Issue, type Profile, type TextSpan } from './engine';
+import { analyze, createReport, PROFILE_OPTIONS, type Analysis, type DocumentBlock, type Issue, type Profile, type TextSpan } from './engine';
 import './styles.css';
 
 interface Example { title: string; eyebrow: string; text: string; }
@@ -59,7 +59,7 @@ app.innerHTML = `
   <div class="app-shell">
     <header class="topbar">
       <a class="brand" href="./" aria-label="LogicLint 首页"><span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span><span>LOGIC<span class="brand-accent">LINT</span></span></a>
-      <div class="topbar-meta"><span class="release-tag">v0.2 explainable</span><span class="topbar-divider" aria-hidden="true"></span><a href="https://github.com/LKRCharon/logiclint" target="_blank" rel="noreferrer" class="icon-link" aria-label="在 GitHub 查看 LogicLint" data-tooltip="GitHub"><i data-lucide="github"></i></a></div>
+      <div class="topbar-meta"><span class="release-tag">v0.3 agent-ready</span><span class="topbar-divider" aria-hidden="true"></span><a href="https://github.com/LKRCharon/logiclint" target="_blank" rel="noreferrer" class="icon-link" aria-label="在 GitHub 查看 LogicLint" data-tooltip="GitHub"><i data-lucide="github"></i></a></div>
     </header>
 
     <main>
@@ -73,7 +73,7 @@ app.innerHTML = `
 
       <section class="lower-grid"><section class="panel source-panel" aria-labelledby="source-title"><div class="panel-head compact-head"><div><div class="eyebrow">03 / TRACE</div><h2 id="source-title">逐段定位</h2></div><span class="panel-meta">命中片段会被标记</span></div><div class="source-preview" id="source-preview"></div></section><section class="panel map-panel" aria-labelledby="map-title"><div class="panel-head compact-head"><div><div class="eyebrow">04 / MAP</div><h2 id="map-title">论证关系</h2></div><span class="panel-meta">claim → evidence → bridge</span></div><div class="argument-map" id="argument-map"></div><div class="map-legend"><span><i class="legend-dot claim-dot"></i>观点</span><span><i class="legend-dot evidence-dot"></i>依据</span><span><i class="legend-dot bridge-dot"></i>桥接</span></div></section></section>
 
-      <section class="agent-strip" aria-label="Agent 集成入口"><div><span class="eyebrow">FOR AGENTS</span><strong>同一份报告，也能交给 Agent 继续处理。</strong><span>当前版本可下载 JSON；CLI 与 Agent Skill 将在 v0.3 提供。</span></div><a href="https://github.com/LKRCharon/logiclint#roadmap" target="_blank" rel="noreferrer">查看路线图 <span aria-hidden="true">↗</span></a></section>
+      <section class="agent-strip" aria-label="Agent 集成入口"><div><span class="eyebrow">FOR AGENTS</span><strong>同一份报告，也能交给 Agent 继续处理。</strong><span>下载 JSON，或运行 <code>npm run --silent logiclint -- --json</code>。</span></div><a href="https://github.com/LKRCharon/logiclint/tree/main/skills/logiclint" target="_blank" rel="noreferrer">查看 SKILL.md <span aria-hidden="true">↗</span></a></section>
     </main>
     <footer class="footer"><span>LogicLint 是一个公开的早期实验项目。</span><a href="https://github.com/LKRCharon/logiclint" target="_blank" rel="noreferrer">在 GitHub 参与迭代 <i data-lucide="github"></i></a></footer>
   </div>
@@ -169,7 +169,7 @@ function runCheck(): void { renderAnalysis(analyze(input.value, profileSelect.va
 function loadExample(index: number): void { input.value = examples[index]?.text ?? sample.text; exampleSelect.value = String(index); updateGutter(); runCheck(); }
 function reportText(): string { const lines = [`LogicLint ${lastAnalysis.version} · ${lastAnalysis.score}/100`, `模式：${PROFILE_OPTIONS.find((profile) => profile.id === lastAnalysis.profile)?.label ?? lastAnalysis.profile}`, `提示：${lastAnalysis.issues.length} 条`]; lastAnalysis.issues.slice(0, 5).forEach((issue) => lines.push(`P${issue.blockIndex + 1} ${issue.label}：${issue.title}`)); return lines.join('\n'); }
 async function copyReport(): Promise<void> { try { await navigator.clipboard.writeText(reportText()); copyButton.dataset.tooltip = '已复制'; window.setTimeout(() => { copyButton.dataset.tooltip = '复制摘要'; }, 1400); } catch { copyButton.dataset.tooltip = '复制失败'; } }
-function exportReport(): void { const blob = new Blob([JSON.stringify({ tool: 'logiclint', ...lastAnalysis }, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `logiclint-report-${new Date().toISOString().slice(0, 10)}.json`; link.click(); URL.revokeObjectURL(url); }
+function exportReport(): void { const blob = new Blob([JSON.stringify(createReport(lastAnalysis, 'browser'), null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `logiclint-report-${new Date().toISOString().slice(0, 10)}.json`; link.click(); URL.revokeObjectURL(url); }
 
 input.addEventListener('input', () => { updateGutter(); runState.innerHTML = '<span class="state-dot"></span> 待检查'; runState.classList.add('stale'); });
 input.addEventListener('scroll', () => { editorGutter.scrollTop = input.scrollTop; });

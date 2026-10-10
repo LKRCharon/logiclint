@@ -51,13 +51,20 @@ export interface AnalysisMetrics {
 }
 
 export interface Analysis {
-  version: '0.2';
+  version: '0.3';
   profile: Profile;
   score: number;
   paragraphs: DocumentBlock[];
   blocks: DocumentBlock[];
   issues: Issue[];
   metrics: AnalysisMetrics;
+}
+
+export interface LogicLintReport {
+  tool: 'logiclint';
+  schemaVersion: '0.3';
+  source: string;
+  analysis: Analysis;
 }
 
 export interface ProfileOption {
@@ -310,5 +317,9 @@ export function analyze(value: string, profile: Profile = 'balanced'): Analysis 
   };
   const penalty = issues.reduce((sum, issue) => sum + (issue.severity === 'high' ? 13 : issue.severity === 'medium' ? 8 : 4) * issue.confidence, 0);
   const score = blocks.length === 0 ? 0 : Math.max(35, Math.min(98, Math.round(100 - penalty)));
-  return { version: '0.2', profile, score, paragraphs, blocks, issues, metrics };
+  return { version: '0.3', profile, score, paragraphs, blocks, issues, metrics };
+}
+
+export function createReport(analysis: Analysis, source: string): LogicLintReport {
+  return { tool: 'logiclint', schemaVersion: analysis.version, source, analysis };
 }

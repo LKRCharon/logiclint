@@ -8,7 +8,7 @@
 
 [Try the live playground](https://lkrcharon.github.io/logiclint/) · [Report an issue](https://github.com/LKRCharon/logiclint/issues) · [Roadmap](#roadmap)
 
-LogicLint is an early, browser-only experiment for reviewing AI-generated plans, technical docs, and long-form text. It turns structural writing advice into visible, clickable prompts.
+LogicLint is an early browser playground and local CLI for reviewing AI-generated plans, technical docs, and long-form text. It turns structural writing advice into visible, clickable prompts and a machine-readable report.
 
 </div>
 
@@ -73,11 +73,22 @@ npm run preview
 
 GitHub Pages serves the `main` branch's `/docs` folder. `npm run build` writes the publishable site there; include the updated `docs/` output when you commit a release.
 
+### Agent interface
+
+The v0.3 CLI reads one file or stdin and keeps the same report shape as the browser's JSON download:
+
+```bash
+npm run --silent logiclint -- --json README.md
+cat docs/design.md | npm run --silent logiclint -- --json --profile technical -
+```
+
+The contract is in [`report.schema.json`](report.schema.json), and [`skills/logiclint/SKILL.md`](skills/logiclint/SKILL.md) describes a conservative Agent workflow. The CLI only reports prompts; it never rewrites the input.
+
 ## Roadmap
 
 - **v0.1 · Playground:** Local heuristic checks, three sample texts, issue-to-source navigation, and an argument map.
 - **v0.2 · Explainable rules:** Markdown-aware parsing, evidence and claim spans, confidence, rule explanations, configurable profiles, and JSON export.
-- **v0.3 · Agent interface:** A small JSON report contract and an opt-in CLI/Agent Skill integration.
+- **v0.3 · Agent interface:** A versioned JSON report contract, stdin/file CLI, and an Agent Skill integration.
 - **v0.4 · Evaluation set:** Human-reviewed examples for checking rule usefulness and false-positive patterns.
 
 The roadmap is directional. Model-based review, accuracy claims, and team or server features are not part of the current releases.
@@ -104,7 +115,7 @@ MIT
 
 ### 给 AI 输出跑一次逻辑单测。
 
-LogicLint 是一个早期的浏览器端实验，用于回看 AI 生成的方案、技术文档和长文本。它把观点、依据与推理桥接之间的缺口变成可点击、可定位的提示。
+LogicLint 是一个早期的浏览器工作台和本地 CLI，用于回看 AI 生成的方案、技术文档和长文本。它把观点、依据与推理桥接之间的缺口变成可点击、可定位的提示，也能输出机器可读报告。
 
 ### 为什么做
 
@@ -163,11 +174,22 @@ npm run preview
 
 GitHub Pages 从 `main` 分支的 `/docs` 目录提供网页。`npm run build` 会把可发布站点生成到该目录；发布新版本时一并提交更新后的 `docs/`。
 
+### Agent 接口
+
+v0.3 的 CLI 支持文件和 stdin，网页下载的 JSON 与命令行报告使用同一份结构：
+
+```bash
+npm run --silent logiclint -- --json README.md
+cat docs/design.md | npm run --silent logiclint -- --json --profile technical -
+```
+
+报告协议见 [`report.schema.json`](report.schema.json)，Agent 使用方式见 [`skills/logiclint/SKILL.md`](skills/logiclint/SKILL.md)。CLI 只提供待复核提示，不会改写输入文件。
+
 ### 路线图
 
 - **v0.1 · 在线工作台：** 本地启发式检查、三段示例、问题定位和论证关系图。
 - **v0.2 · 可解释规则：** Markdown 解析、观点与依据文本标记、置信度、规则解释、可配置模式和 JSON 导出。
-- **v0.3 · Agent 接口：** JSON 报告格式，以及可选 CLI / Agent Skill 集成。
+- **v0.3 · Agent 接口：** 有版本的 JSON 报告协议、支持 stdin/文件的 CLI，以及 Agent Skill 集成。
 - **v0.4 · 评测样本：** 人工审核的案例，用于观察规则是否有用及其误报情况。
 
 路线图用于说明方向。模型审稿、准确率承诺、团队或服务端功能不属于当前版本。
