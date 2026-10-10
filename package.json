@@ -1,14 +1,18 @@
 {
   "name": "logiclint",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "description": "Logic checks for AI-generated text, plans, and technical documents.",
   "type": "module",
+  "engines": {
+    "node": ">=22.6.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "logiclint": "node --disable-warning=ExperimentalWarning --experimental-strip-types scripts/logiclint.mjs"
+    "logiclint": "node --disable-warning=ExperimentalWarning --experimental-strip-types scripts/logiclint.mjs",
+    "evaluate": "node --disable-warning=ExperimentalWarning --experimental-strip-types scripts/evaluate-fixtures.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

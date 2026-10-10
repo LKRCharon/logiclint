@@ -1,5 +1,5 @@
 import { Copy, createIcons, Download, Github, Play, Sparkles, Target, Trash2 } from 'lucide';
-import { analyze, createReport, PROFILE_OPTIONS, type Analysis, type DocumentBlock, type Issue, type Profile, type TextSpan } from './engine';
+import { analyze, createReport, hasBridgeSignal, hasClaimSignal, hasEvidenceSignal, PROFILE_OPTIONS, type Analysis, type DocumentBlock, type Issue, type Profile, type TextSpan } from './engine';
 import './styles.css';
 
 interface Example { title: string; eyebrow: string; text: string; }
@@ -59,7 +59,7 @@ app.innerHTML = `
   <div class="app-shell">
     <header class="topbar">
       <a class="brand" href="./" aria-label="LogicLint 首页"><span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span><span>LOGIC<span class="brand-accent">LINT</span></span></a>
-      <div class="topbar-meta"><span class="release-tag">v0.3 agent-ready</span><span class="topbar-divider" aria-hidden="true"></span><a href="https://github.com/LKRCharon/logiclint" target="_blank" rel="noreferrer" class="icon-link" aria-label="在 GitHub 查看 LogicLint" data-tooltip="GitHub"><i data-lucide="github"></i></a></div>
+      <div class="topbar-meta"><span class="release-tag">v0.4 evaluated</span><span class="topbar-divider" aria-hidden="true"></span><a href="https://github.com/LKRCharon/logiclint" target="_blank" rel="noreferrer" class="icon-link" aria-label="在 GitHub 查看 LogicLint" data-tooltip="GitHub"><i data-lucide="github"></i></a></div>
     </header>
 
     <main>
@@ -149,9 +149,9 @@ function renderSource(analysis: Analysis): void {
 
 function renderMap(analysis: Analysis): void {
   argumentMap.innerHTML = '';
-  const firstClaim = analysis.paragraphs.find((block) => ['claim', 'bridge', 'mixed'].includes(block.role));
-  const firstEvidence = analysis.paragraphs.find((block) => block.role === 'evidence') ?? analysis.paragraphs.find((block) => block.role === 'mixed');
-  const firstBridge = analysis.paragraphs.find((block) => block.role === 'bridge') ?? analysis.paragraphs.find((block) => block.role === 'mixed' || block.text.includes('因此'));
+  const firstClaim = analysis.paragraphs.find((block) => hasClaimSignal(block.text));
+  const firstEvidence = analysis.paragraphs.find((block) => hasEvidenceSignal(block.text));
+  const firstBridge = analysis.paragraphs.find((block) => hasBridgeSignal(block.text));
   const nodes = [{ type: 'claim', label: '观点', text: firstClaim ? `P${firstClaim.index + 1} · ${firstClaim.sentences[0]?.slice(0, 38) ?? ''}` : '等待观点', block: firstClaim }, { type: 'evidence', label: '依据', text: firstEvidence ? `P${firstEvidence.index + 1} · ${firstEvidence.sentences[0]?.slice(0, 38) ?? ''}` : '还没有具体依据', block: firstEvidence }, { type: 'bridge', label: '桥接', text: firstBridge ? `P${firstBridge.index + 1} · 发现因果或结论连接词` : '等待推理关系', block: firstBridge }];
   const map = document.createElement('div'); map.className = 'map-flow';
   nodes.forEach((node, index) => { const card = document.createElement('button'); card.className = `map-node map-${node.type}`; card.type = 'button'; card.innerHTML = `<span class="map-node-label">${node.label}</span><strong></strong>`; card.querySelector('strong')!.textContent = node.text; if (node.block) card.addEventListener('click', () => focusBlock(node.block!)); map.append(card); if (index < nodes.length - 1) { const arrow = document.createElement('span'); arrow.className = 'map-arrow'; arrow.setAttribute('aria-hidden', 'true'); arrow.textContent = '→'; map.append(arrow); } });

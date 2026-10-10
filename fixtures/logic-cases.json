@@ -1,0 +1,79 @@
+{
+  "version": "0.4",
+  "description": "Small regression cases for LogicLint rules. These cases test rule behavior, not model accuracy.",
+  "cases": [
+    {
+      "id": "clean-evidence-bridge",
+      "label": "事实和结论在同一段中有明确连接",
+      "profile": "balanced",
+      "text": "在 A/B 测试中，缓存命中率从 74% 提升到 82%，错误率从 2.1% 降至 1.4%。因此，我们暂时保留缓存策略，并继续观察一周。",
+      "expectedKinds": [],
+      "forbiddenKinds": ["evidence", "causal", "drift", "vague", "tone"]
+    },
+    {
+      "id": "missing-evidence",
+      "label": "结论和因果词没有核验依据",
+      "profile": "balanced",
+      "text": "这个方案能够显著提升效率，因此值得马上推广。",
+      "expectedKinds": ["evidence", "causal", "vague"]
+    },
+    {
+      "id": "topic-drift",
+      "label": "长段落中混入无关主题",
+      "profile": "logic",
+      "text": "我们建议在本周完成缓存迁移。迁移前需要备份数据库。办公室将在周五举办团建活动。市场团队还在准备下季度海报。",
+      "expectedKinds": ["drift"]
+    },
+    {
+      "id": "technical-number",
+      "label": "技术文档中的大数字没有千分号",
+      "profile": "technical",
+      "text": "本次测试覆盖 12000 个请求，错误率从 3% 降至 1%。",
+      "expectedKinds": ["number"]
+    },
+    {
+      "id": "technical-reference",
+      "label": "提到报告但没有可追溯出处",
+      "profile": "technical",
+      "text": "据内部报告，迁移后错误率会下降 30%。",
+      "expectedKinds": ["reference"]
+    },
+    {
+      "id": "humanizer-signal",
+      "label": "表达信号需要具体化",
+      "profile": "balanced",
+      "text": "总的来说，这个方案会显著提升效率。",
+      "expectedKinds": ["evidence", "vague", "tone"]
+    },
+    {
+      "id": "markdown-structure",
+      "label": "标题和列表不应被当成普通段落",
+      "profile": "logic",
+      "text": "# 发布结果\n\n测试覆盖 1,200 个请求，错误率为 0.8%。\n\n- 先备份数据\n- 再切换流量",
+      "expectedKinds": [],
+      "forbiddenKinds": ["drift", "evidence", "causal"]
+    },
+    {
+      "id": "ambiguous-pronoun",
+      "label": "段首代词缺少指向",
+      "profile": "logic",
+      "text": "这会改善系统稳定性。",
+      "expectedKinds": ["evidence", "pronoun"]
+    },
+    {
+      "id": "duplicate-claim",
+      "label": "相同结论重复出现",
+      "profile": "logic",
+      "text": "这个方案能够提升效率。\n\n这个方案能够提升效率。",
+      "expectedKinds": ["evidence", "duplicate"]
+    },
+    {
+      "id": "traceable-reference",
+      "label": "带有链接的引用不应提示缺口",
+      "profile": "technical",
+      "text": "根据[官方文档](https://example.com)，缓存 TTL 设置为 300 秒。",
+      "expectedKinds": [],
+      "forbiddenKinds": ["reference", "causal"]
+    }
+  ]
+}

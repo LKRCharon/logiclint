@@ -51,7 +51,7 @@ export interface AnalysisMetrics {
 }
 
 export interface Analysis {
-  version: '0.3';
+  version: '0.4';
   profile: Profile;
   score: number;
   paragraphs: DocumentBlock[];
@@ -66,6 +66,8 @@ export interface LogicLintReport {
   source: string;
   analysis: Analysis;
 }
+
+export const REPORT_SCHEMA_VERSION = '0.3' as const;
 
 export interface ProfileOption {
   id: Profile;
@@ -99,6 +101,18 @@ function hasAny(value: string, words: string[]): boolean {
   return words.some((word) => value.includes(word));
 }
 
+export function hasClaimSignal(value: string): boolean {
+  return hasAny(value, CLAIM_WORDS) || /(?:计划|建议|应该|需要)\s*[^。！？!?；;]+/.test(value);
+}
+
+export function hasEvidenceSignal(value: string): boolean {
+  return hasAny(value, EVIDENCE_WORDS) || /\d/.test(value);
+}
+
+export function hasBridgeSignal(value: string): boolean {
+  return hasAny(value, BRIDGE_WORDS);
+}
+
 function matches(value: string, words: string[]): TextSpan[] {
   const spans: TextSpan[] = [];
   words.forEach((word) => {
@@ -112,13 +126,37 @@ function matches(value: string, words: string[]): TextSpan[] {
 }
 
 function meaningfulTokens(value: string): string[] {
-  return (value.match(/[\u4e00-\u9fff]{2,}|[A-Za-z]{3,}|\d+(?:\.\d+)?%?/g) ?? [])
-    .map((token) => token.toLowerCase())
-    .filter((token) => !STOP_WORDS.has(token));
+  const tokens: string[] = [];
+  const runs = value.match(/[\u4e00-\u9fff]{2,}|[A-Za-z]{3,}|\d+(?:\.\d+)?%?/g) ?? [];
+  runs.forEach((run) => {
+    const token = run.toLowerCase();
+    if (/^[\u4e00-\u9fff]+$/.test(token)) {
+      for (let index = 0; index < token.length - 1; index += 1) {
+        const bigram = token.slice(index, index + 2);
+        if (!STOP_WORDS.has(bigram)) tokens.push(bigram);
+      }
+    } else if (!STOP_WORDS.has(token)) {
+      tokens.push(token);
+    }
+  });
+  return tokens;
 }
 
 function splitSentences(value: string): string[] {
-  return value.match(/[^。！？!?；;.!?]+[。！？!?；;.!?]?/g)?.map((sentence) => sentence.trim()).filter(Boolean) ?? [];
+  const sentences: string[] = [];
+  let start = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    const character = value[index];
+    const decimalPoint = character === '.' && /\d/.test(value[index - 1] ?? '') && /\d/.test(value[index + 1] ?? '');
+    if ('。！？!?；;'.includes(character) || character === '.' && !decimalPoint) {
+      const sentence = value.slice(start, index + 1).trim();
+      if (sentence) sentences.push(sentence);
+      start = index + 1;
+    }
+  }
+  const remainder = value.slice(start).trim();
+  if (remainder) sentences.push(remainder);
+  return sentences;
 }
 
 function classifyLine(line: string): BlockKind {
@@ -194,11 +232,10 @@ function parseBlocks(value: string): DocumentBlock[] {
 }
 
 function roleFor(text: string): ParagraphRole {
-  const hasClaim = hasAny(text, CLAIM_WORDS) || /(?:计划|建议|应该|需要)\s*[^。！？!?；;]+/.test(text);
-  const hasEvidence = hasAny(text, EVIDENCE_WORDS) || /\d/.test(text);
-  const hasBridge = hasAny(text, BRIDGE_WORDS);
-  const count = Number(hasClaim) + Number(hasEvidence) + Number(hasBridge);
-  if (count > 1) return 'mixed';
+  const hasClaim = hasClaimSignal(text);
+  const hasEvidence = hasEvidenceSignal(text);
+  const hasBridge = hasBridgeSignal(text);
+  if (hasClaim && hasEvidence) return 'mixed';
   if (hasEvidence) return 'evidence';
   if (hasBridge) return 'bridge';
   if (hasClaim) return 'claim';
@@ -230,9 +267,9 @@ function analyzeBlock(block: DocumentBlock, profile: Profile, allIssues: Issue[]
   const sentences = splitSentences(text);
   block.sentences = sentences;
   block.role = roleFor(text);
-  const hasClaim = block.role === 'claim' || block.role === 'bridge' || block.role === 'mixed';
-  const hasEvidence = block.role === 'evidence' || block.role === 'mixed';
-  const hasBridge = hasAny(text, BRIDGE_WORDS);
+  const hasClaim = hasClaimSignal(text);
+  const hasEvidence = hasEvidenceSignal(text);
+  const hasBridge = hasBridgeSignal(text);
   const add = (kind: IssueKind, severity: Severity, confidence: number, label: string, title: string, detail: string, suggestion: string, why: string, spans: TextSpan[]) => {
     addIssue(allIssues, block.index, kind, severity, confidence, label, title, detail, suggestion, why, spans);
     block.issues.push(allIssues[allIssues.length - 1]);
@@ -258,7 +295,10 @@ function analyzeBlock(block: DocumentBlock, profile: Profile, allIssues: Issue[]
   }
 
   const firstSentence = sentences[0] ?? text;
-  const pronounSpans = matches(firstSentence, PRONOUN_WORDS).filter((span) => span.start < 3);
+  const pronounSpans = matches(firstSentence, PRONOUN_WORDS)
+    .filter((span) => span.start < 3)
+    .filter((span) => !(span.text === '这' && /^(?:这个|这些|这一|这次|这种)/.test(firstSentence)))
+    .filter((span) => !(span.text === '该' && /^该(?:方案|系统)/.test(firstSentence)));
   if (pronounSpans.length > 0) {
     add('pronoun', 'low', 0.72, '指代不明', `“${pronounSpans[0].text}”没有明确指向`, '句子一开始就使用代词，读者还没有足够上下文判断它指的是哪个对象。', '把代词换成名词，或把它放到已经出现过的对象之后。', '技术文档和方案需要让读者无需回读就知道每个代词指向什么。', pronounSpans);
   }
@@ -309,17 +349,17 @@ export function analyze(value: string, profile: Profile = 'balanced'): Analysis 
     paragraphs: paragraphs.length,
     headings: blocks.filter((block) => block.kind === 'heading').length,
     lists: blocks.filter((block) => block.kind === 'list').length,
-    claims: paragraphs.filter((block) => ['claim', 'bridge', 'mixed'].includes(block.role)).length,
-    evidence: paragraphs.filter((block) => ['evidence', 'mixed'].includes(block.role)).length,
-    bridges: paragraphs.filter((block) => hasAny(block.text, BRIDGE_WORDS)).length,
+    claims: paragraphs.filter((block) => hasClaimSignal(block.text)).length,
+    evidence: paragraphs.filter((block) => hasEvidenceSignal(block.text)).length,
+    bridges: paragraphs.filter((block) => hasBridgeSignal(block.text)).length,
     cited: paragraphs.filter((block) => /https?:\/\/|\[[^\]]+\]\([^)]*\)|来源|引用|参考文献/.test(block.text)).length,
     words: meaningfulTokens(value).length,
   };
   const penalty = issues.reduce((sum, issue) => sum + (issue.severity === 'high' ? 13 : issue.severity === 'medium' ? 8 : 4) * issue.confidence, 0);
   const score = blocks.length === 0 ? 0 : Math.max(35, Math.min(98, Math.round(100 - penalty)));
-  return { version: '0.3', profile, score, paragraphs, blocks, issues, metrics };
+  return { version: '0.4', profile, score, paragraphs, blocks, issues, metrics };
 }
 
 export function createReport(analysis: Analysis, source: string): LogicLintReport {
-  return { tool: 'logiclint', schemaVersion: analysis.version, source, analysis };
+  return { tool: 'logiclint', schemaVersion: REPORT_SCHEMA_VERSION, source, analysis };
 }

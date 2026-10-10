@@ -46,6 +46,16 @@ The demo runs entirely in your browser. Text is not uploaded to a server.
 
 These are heuristic prompts, not proofs of a logical fallacy. The current Chinese-first rules use keyword and structure matching. They can miss real issues, flag valid writing, and do not understand domain context. Treat every result as a question for a human reviewer.
 
+## v0.4 regression set
+
+The repository includes ten hand-authored cases for clean text, missing evidence, causal jumps, topic drift, number formatting, citations, expression signals, Markdown blocks, pronouns, and repeated claims.
+
+```bash
+npm run --silent evaluate
+```
+
+The evaluator checks expected and forbidden rule categories and exits nonzero on a regression. These examples test deterministic rule behavior; they are not an accuracy benchmark or an independent editorial study. See [research notes](RESEARCH.md) for the source mapping and limitations.
+
 ## How this fits with other tools
 
 | Tool or guidance | Main focus | How LogicLint differs |
@@ -57,7 +67,7 @@ These are heuristic prompts, not proofs of a logical fallacy. The current Chines
 
 ## Run locally
 
-Requirements: Node.js 22 or newer.
+Requirements: Node.js 22.6 or newer.
 
 ```bash
 npm install
@@ -89,7 +99,7 @@ The contract is in [`report.schema.json`](report.schema.json), and [`skills/logi
 - **v0.1 · Playground:** Local heuristic checks, three sample texts, issue-to-source navigation, and an argument map.
 - **v0.2 · Explainable rules:** Markdown-aware parsing, evidence and claim spans, confidence, rule explanations, configurable profiles, and JSON export.
 - **v0.3 · Agent interface:** A versioned JSON report contract, stdin/file CLI, and an Agent Skill integration.
-- **v0.4 · Evaluation set:** Human-reviewed examples for checking rule usefulness and false-positive patterns.
+- **v0.4 · Rule regression set:** Hand-authored fixtures, expected and forbidden categories, and a machine-readable evaluation summary.
 
 The roadmap is directional. Model-based review, accuracy claims, and team or server features are not part of the current releases.
 
@@ -134,7 +144,7 @@ AI 文本经常读起来很顺，却省略关键步骤：结论先于依据、�
 
 首版在浏览器本地运行，不会把文本上传到服务器。
 
-### v0.2 检查什么
+### v0.4 检查什么
 
 - 观点或结论附近缺少可识别的依据。
 - 出现因果词或结论词，但没有写出支持它的步骤。
@@ -149,6 +159,10 @@ AI 文本经常读起来很顺，却省略关键步骤：结论先于依据、�
 
 这些都是启发式提示，不是逻辑谬误的证明。当前中文优先规则基于关键词和文本结构，可能漏掉实际问题，也可能误报，且不理解领域上下文。请把每条结果当作人工复核的问题。
 
+### 回归样本
+
+仓库提供 10 个手写案例，涵盖干净文本、依据缺口、因果跳步、主题漂移、数字格式、引用、表达信号、Markdown 结构、代词和重复结论。运行 `npm run --silent evaluate` 可以检查规则是否符合这些案例的预期类别；这不是准确率测试，也不是独立编辑审查研究。详细来源映射和限制见[调研记录](RESEARCH.md)。
+
 ### 和已有工具的区别
 
 - [阮一峰：中文技术文档的写作规范](https://github.com/ruanyf/document-style-guide)关注句子、段落和技术文档组织；LogicLint 把部分结构问题变成可点击检查，并尝试把观点与支持材料关联起来。
@@ -158,7 +172,7 @@ AI 文本经常读起来很顺，却省略关键步骤：结论先于依据、�
 
 ### 本地运行
 
-需要 Node.js 22 或更新版本。
+需要 Node.js 22.6 或更新版本。
 
 ```bash
 npm install
@@ -190,7 +204,7 @@ cat docs/design.md | npm run --silent logiclint -- --json --profile technical -
 - **v0.1 · 在线工作台：** 本地启发式检查、三段示例、问题定位和论证关系图。
 - **v0.2 · 可解释规则：** Markdown 解析、观点与依据文本标记、置信度、规则解释、可配置模式和 JSON 导出。
 - **v0.3 · Agent 接口：** 有版本的 JSON 报告协议、支持 stdin/文件的 CLI，以及 Agent Skill 集成。
-- **v0.4 · 评测样本：** 人工审核的案例，用于观察规则是否有用及其误报情况。
+- **v0.4 · 规则回归集：** 手写 fixtures、预期/禁止提示类别和机器可读评测摘要。
 
 路线图用于说明方向。模型审稿、准确率承诺、团队或服务端功能不属于当前版本。
 

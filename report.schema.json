@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/LKRCharon/logiclint/blob/main/report.schema.json",
+  "$id": "https://raw.githubusercontent.com/LKRCharon/logiclint/main/report.schema.json",
   "title": "LogicLint report",
   "description": "A deterministic, explainable LogicLint analysis report.",
   "type": "object",
@@ -18,7 +18,7 @@
       "additionalProperties": false,
       "required": ["version", "profile", "score", "paragraphs", "blocks", "issues", "metrics"],
       "properties": {
-        "version": { "const": "0.3" },
+        "version": { "enum": ["0.3", "0.4"] },
         "profile": { "enum": ["balanced", "logic", "technical"] },
         "score": { "type": "integer", "minimum": 0, "maximum": 100 },
         "paragraphs": { "type": "array", "items": { "$ref": "#/$defs/block" } },
