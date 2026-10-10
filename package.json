@@ -1,6 +1,6 @@
 {
   "name": "logiclint",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "private": true,
   "description": "Logic checks for AI-generated text, plans, and technical documents.",
   "type": "module",
