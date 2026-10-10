@@ -31,7 +31,7 @@ Open the [LogicLint playground](https://lkrcharon.github.io/logiclint/). The pag
 
 The demo runs entirely in your browser. Text is not uploaded to a server.
 
-## What v0.1 checks
+## What v0.2 checks
 
 - A conclusion or claim with no recognizable evidence nearby.
 - Causal and conclusion words without an explicit supporting step.
@@ -39,6 +39,10 @@ The demo runs entirely in your browser. Text is not uploaded to a server.
 - Ambiguous pronouns at the beginning of a passage.
 - Possible topic drift within a long paragraph.
 - Repeated claims that add no new evidence.
+- Markdown headings, lists, quotes, and code blocks, so checks do not treat every line as a paragraph.
+- Highlighted source spans, confidence levels, a short explanation, and the rule source for every prompt.
+- Three profiles: balanced logic and expression checks, logic-only checks, and technical-document checks.
+- Technical-document details such as unformatted large numbers, incomplete ranges, and references without a traceable link.
 
 These are heuristic prompts, not proofs of a logical fallacy. The current Chinese-first rules use keyword and structure matching. They can miss real issues, flag valid writing, and do not understand domain context. Treat every result as a question for a human reviewer.
 
@@ -72,11 +76,11 @@ GitHub Pages serves the `main` branch's `/docs` folder. `npm run build` writes t
 ## Roadmap
 
 - **v0.1 · Playground:** Local heuristic checks, three sample texts, issue-to-source navigation, and an argument map.
-- **v0.2 · Better traces:** Markdown-aware parsing, evidence and claim spans, rule explanations, and configurable checks.
+- **v0.2 · Explainable rules:** Markdown-aware parsing, evidence and claim spans, confidence, rule explanations, configurable profiles, and JSON export.
 - **v0.3 · Agent interface:** A small JSON report contract and an opt-in CLI/Agent Skill integration.
 - **v0.4 · Evaluation set:** Human-reviewed examples for checking rule usefulness and false-positive patterns.
 
-The roadmap is directional. Model-based review, accuracy claims, and team or server features are not part of v0.1.
+The roadmap is directional. Model-based review, accuracy claims, and team or server features are not part of the current releases.
 
 ## Contribute
 
@@ -119,7 +123,7 @@ AI 文本经常读起来很顺，却省略关键步骤：结论先于依据、�
 
 首版在浏览器本地运行，不会把文本上传到服务器。
 
-### v0.1 检查什么
+### v0.2 检查什么
 
 - 观点或结论附近缺少可识别的依据。
 - 出现因果词或结论词，但没有写出支持它的步骤。
@@ -127,6 +131,10 @@ AI 文本经常读起来很顺，却省略关键步骤：结论先于依据、�
 - 段首代词可能没有明确指向。
 - 长段落中可能混入多个主题。
 - 相近结论重复出现，但没有增加依据。
+- Markdown 标题、列表、引用和代码块，避免把所有内容都当成普通段落。
+- 命中原文片段、置信度、提示原因和规则来源，方便人工复核。
+- 三种检查模式：逻辑 + 表达、只看逻辑、技术文档。
+- 技术文档中的大数字格式、范围单位和缺少可追溯链接的引用。
 
 这些都是启发式提示，不是逻辑谬误的证明。当前中文优先规则基于关键词和文本结构，可能漏掉实际问题，也可能误报，且不理解领域上下文。请把每条结果当作人工复核的问题。
 
@@ -158,11 +166,11 @@ GitHub Pages 从 `main` 分支的 `/docs` 目录提供网页。`npm run build` �
 ### 路线图
 
 - **v0.1 · 在线工作台：** 本地启发式检查、三段示例、问题定位和论证关系图。
-- **v0.2 · 更好的追踪：** Markdown 解析、观点与依据文本标记、规则解释和可配置检查项。
+- **v0.2 · 可解释规则：** Markdown 解析、观点与依据文本标记、置信度、规则解释、可配置模式和 JSON 导出。
 - **v0.3 · Agent 接口：** JSON 报告格式，以及可选 CLI / Agent Skill 集成。
 - **v0.4 · 评测样本：** 人工审核的案例，用于观察规则是否有用及其误报情况。
 
-路线图用于说明方向。模型审稿、准确率承诺、团队或服务端功能都不属于 v0.1。
+路线图用于说明方向。模型审稿、准确率承诺、团队或服务端功能不属于当前版本。
 
 ### 参与贡献
 
